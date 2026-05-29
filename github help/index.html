@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neon Dimension</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        overflow: hidden;
+        background: #050816;
+        color: white;
+        height: 100vh;
+      }
+
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at center,
+          rgba(0, 255, 255, 0.05),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+
+      .container {
+        position: relative;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 6rem;
+        text-transform: uppercase;
+        letter-spacing: 10px;
+        background: linear-gradient(90deg, #00f0ff, #ff00ea, #00f0ff);
+        background-size: 300%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientMove 5s infinite linear;
+        text-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+      }
+
+      p {
+        margin-top: 20px;
+        font-size: 1.3rem;
+        max-width: 700px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .buttons {
+        margin-top: 40px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      button {
+        padding: 15px 35px;
+        border: none;
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      button::before {
+        content: "";
+        position: absolute;
+        top: -100%;
+        left: -100%;
+        width: 300%;
+        height: 300%;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transform: rotate(45deg);
+        transition: 0.5s;
+      }
+
+      button:hover::before {
+        top: 100%;
+        left: 100%;
+      }
+
+      button:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+        border-color: #00f0ff;
+      }
+
+      .floating-card {
+        position: absolute;
+        width: 250px;
+        height: 160px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        border-radius: 25px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .floating-card h3 {
+        color: #00f0ff;
+        font-size: 1.2rem;
+      }
+
+      .floating-card p {
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      .card1 {
+        top: 10%;
+        left: 8%;
+      }
+
+      .card2 {
+        bottom: 12%;
+        right: 10%;
+        animation-delay: 2s;
+      }
+
+      .card3 {
+        top: 18%;
+        right: 12%;
+        animation-delay: 4s;
+      }
+
+      @keyframes gradientMove {
+        0% {
+          background-position: 0%;
+        }
+        100% {
+          background-position: 300%;
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+
+      .cursor-glow {
+        position: fixed;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(
+          circle,
+          rgba(0, 255, 255, 0.15),
+          transparent 70%
+        );
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: screen;
+        z-index: 1;
+      }
+
+      @media (max-width: 900px) {
+        h1 {
+          font-size: 3rem;
+        }
+
+        .floating-card {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="stars"></canvas>
+    <div class="overlay"></div>
+    <div class="cursor-glow" id="glow"></div>
+
+    <div class="floating-card card1">
+      <h3>Realtime Effects</h3>
+      <p>
+        Particles, glow and animated gradients powered only by HTML, CSS and
+        JavaScript.
+      </p>
+    </div>
+
+    <div class="floating-card card2">
+      <h3>Interactive Design</h3>
+      <p>Move your mouse and watch the environment react around you.</p>
+    </div>
+
+    <div class="floating-card card3">
+      <h3>Modern UI</h3>
+      <p>
+        Glassmorphism, neon lighting and futuristic visuals combined together.
+      </p>
+    </div>
+
+    <div class="container">
+      <h1>NEON DIMENSION</h1>
+      <p>
+        A futuristic interactive webpage built entirely with pure HTML, CSS and
+        JavaScript. Animated particles, glowing effects, floating UI cards and
+        responsive motion all work together to create a cinematic cyberpunk
+        experience.
+      </p>
+
+      <div class="buttons">
+        <button onclick="explode()">Trigger Energy</button>
+        <button onclick="changeTheme()">Change Atmosphere</button>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("stars");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+
+      class Particle {
+        constructor(x, y, size, speedX, speedY, color) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.speedX = speedX;
+          this.speedY = speedY;
+          this.color = color;
+        }
+
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+
+          if (this.size > 0.2) {
+            this.size -= 0.01;
+          }
+        }
+
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function initStars() {
+        particles = [];
+        for (let i = 0; i < 180; i++) {
+          particles.push(
+            new Particle(
+              Math.random() * canvas.width,
+              Math.random() * canvas.height,
+              Math.random() * 2 + 1,
+              (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
+              "rgba(0,255,255,0.8)",
+            ),
+          );
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach((particle, index) => {
+          particle.update();
+          particle.draw();
+
+          if (particle.size <= 0.3) {
+            particles.splice(index, 1);
+          }
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      function explode() {
+        for (let i = 0; i < 120; i++) {
+          particles.push(
+            new Particle(
+              canvas.width / 2,
+              canvas.height / 2,
+              Math.random() * 6 + 2,
+              (Math.random() - 0.5) * 8,
+              (Math.random() - 0.5) * 8,
+              `hsl(${Math.random() * 360},100%,60%)`,
+            ),
+          );
+        }
+      }
+
+      let dark = true;
+
+      function changeTheme() {
+        if (dark) {
+          document.body.style.background = "#12001f";
+        } else {
+          document.body.style.background = "#050816";
+        }
+        dark = !dark;
+      }
+
+      initStars();
+      animate();
+
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initStars();
+      });
+
+      const glow = document.getElementById("glow");
+
+      document.addEventListener("mousemove", (e) => {
+        glow.style.left = e.clientX + "px";
+        glow.style.top = e.clientY + "px";
+      });
+    </script>
+  </body>
+</html>
