@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Tokyo Neon Empire — live Japan statistics dashboard with anime aesthetic" />
+  <title>Tokyo Neon Empire 🌸</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+  <!-- ── Canvas sky (particle layer) ── -->
+  <canvas id="sky"></canvas>
+
+  <!-- ── FX overlays ── -->
+  <div class="fx-layer noise"></div>
+  <div class="fx-layer scanlines"></div>
+  <div class="fx-layer vignette"></div>
+
+  <!-- ── Mouse follow glow ── -->
+  <div class="cursor-glow" id="glow"></div>
+
+  <!-- ── Floating idol characters (fixed, decorative) ── -->
+  <div class="idol-strip" aria-hidden="true">
+    <div class="idol one">
+      <div class="portrait"><div class="hair"></div></div>
+      <div class="name">Sakura Nova</div>
+    </div>
+    <div class="idol two">
+      <div class="portrait">
+        <div class="hair" style="background:linear-gradient(135deg,#ff8be7,#7be8ff 60%,#2e1240)"></div>
+      </div>
+      <div class="name">Neon Pilot</div>
+    </div>
+    <div class="idol three">
+      <div class="portrait">
+        <div class="hair" style="background:linear-gradient(135deg,#ffe08a,#ff4fd8 60%,#2a133b)"></div>
+      </div>
+      <div class="name">Moon Runner</div>
+    </div>
+    <div class="idol four">
+      <div class="portrait">
+        <div class="hair" style="background:linear-gradient(135deg,#9d7bff,#ff4fd8 60%,#291038)"></div>
+      </div>
+      <div class="name">Dream Signal</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       APP SHELL
+  ══════════════════════════════════════ -->
+  <div class="app">
+
+    <!-- ── Top bar ── -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="orb"></div>
+        <div>
+          <h1>TOKYO NEON EMPIRE</h1>
+          <p>ピンクのアニメ世界 · live Japan stats · tourism · economy · culture</p>
+        </div>
+      </div>
+      <div class="controls">
+        <span id="clock">00:00:00</span>
+        <span class="chip" id="statusChip">Connecting…</span>
+        <button class="btn" id="moodBtn" title="Shift colour scene (M)">Shift mood</button>
+        <button class="btn" id="burstBtn" title="Energy burst (Space)">Energy burst</button>
+        <button class="btn primary" id="modeBtn">Pulse mode</button>
+      </div>
+    </header>
+
+    <!-- ── Ticker ── -->
+    <div class="ticker" aria-label="Japan facts ticker">
+      <div class="ticker-track" id="tickerTrack">Loading facts…</div>
+    </div>
+
+    <!-- ══ Main 2-column grid ══ -->
+    <div class="main-grid">
+
+      <!-- ════════ LEFT — Hero + data ════════ -->
+      <section class="hero">
+
+        <!-- Eyebrow -->
+        <div class="eyebrow">◆ 1990s anime opening · live data edition ◆</div>
+
+        <!-- Title -->
+        <h2 class="hero-title">A pink neon dashboard<br>with real Japan data.</h2>
+
+        <!-- Subtitle -->
+        <p class="hero-sub">
+          Population, tourism, economy, and culture — pulled live from World Bank,
+          JNTO, and e-Stat. Wrapped in the wildest anime aesthetic on the internet.
+          Click anywhere for sparks. Press <kbd class="kbd">Space</kbd> for a burst.
+        </p>
+
+        <!-- ── Top 4 stat cards ── -->
+        <div class="stats-bar">
+          <div class="stat has-shine" id="statPop">
+            <span class="stat-value">Loading…</span>
+            <div class="stat-label">Japan population</div>
+            <div class="stat-delta up">—</div>
+          </div>
+          <div class="stat has-shine" id="statTour">
+            <span class="stat-value">Loading…</span>
+            <div class="stat-label">Tourism arrivals</div>
+            <div class="stat-delta up">—</div>
+          </div>
+          <div class="stat has-shine" id="statAir">
+            <span class="stat-value">Loading…</span>
+            <div class="stat-label">Air passengers</div>
+            <div class="stat-delta up">—</div>
+          </div>
+          <div class="stat has-shine" id="statRetail">
+            <span class="stat-value">Loading…</span>
+            <div class="stat-label">Retail sales</div>
+            <div class="stat-delta up">—</div>
+          </div>
+        </div>
+
+        <!-- ── Metric grid (12 tiles) ── -->
+        <div>
+          <div class="section-title" style="margin-bottom:12px">📊 Japan data board</div>
+          <div class="metric-grid" id="metricGrid"></div>
+        </div>
+
+        <!-- ── Charts row ── -->
+        <div class="charts-row">
+          <!-- Tourism by country -->
+          <div class="chart-card">
+            <h5>🌏 Top visitor countries 2024</h5>
+            <div class="bar-chart" id="tourismChart"></div>
+          </div>
+
+          <!-- Population sparkline -->
+          <div class="chart-card">
+            <h5>👥 Population trend (10 years)</h5>
+            <div class="sparkline-wrap">
+              <canvas id="popSparkline"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Additional Japan stats section ── -->
+        <div>
+          <div class="section-title" style="margin-bottom:12px">🏯 Culture & infrastructure</div>
+          <div class="metric-grid">
+            <div class="metric fade-in">
+              <div class="metric-key">Anime market</div>
+              <div class="metric-val">$25.9B</div>
+              <div class="metric-desc">Global market size 2023 · AJA</div>
+            </div>
+            <div class="metric fade-in">
+              <div class="metric-key">Shinkansen</div>
+              <div class="metric-val">3,041 km</div>
+              <div class="metric-desc">High-speed rail network · MLIT</div>
+            </div>
+            <div class="metric fade-in">
+              <div class="metric-key">Internet users</div>
+              <div class="metric-val">93.2%</div>
+              <div class="metric-desc">Penetration rate 2024 · MIC</div>
+            </div>
+            <div class="metric fade-in">
+              <div class="metric-key">Life expectancy ♀</div>
+              <div class="metric-val">87.2 yrs</div>
+              <div class="metric-desc">Highest globally · Stats JPN</div>
+            </div>
+            <div class="metric fade-in">
+              <div class="metric-key">Renewables</div>
+              <div class="metric-val">22.4%</div>
+              <div class="metric-desc">Share of electricity 2024 · ANRE</div>
+            </div>
+            <div class="metric fade-in">
+              <div class="metric-key">Hotel occupancy</div>
+              <div class="metric-val">72.4%</div>
+              <div class="metric-desc">National avg 2024 · e-Stat</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Gallery cards ── -->
+        <div>
+          <div class="section-title" style="margin-bottom:12px">🗼 Data windows</div>
+          <div class="gallery" id="gallery"></div>
+        </div>
+
+      </section>
+
+      <!-- ════════ RIGHT — Control panel ════════ -->
+      <aside class="side-panel">
+
+        <!-- Transmission card -->
+        <div class="panel-card">
+          <h3>⚡ Control room</h3>
+          <div class="inner-card">
+            <div class="card-head">
+              <h4>Transmission</h4>
+              <span class="pill pink" id="powerState">Calm</span>
+            </div>
+            <p class="card-body" id="powerText">The city is glowing quietly, waiting for a burst.</p>
+            <div class="bar"><span id="powerBar" style="width:30%"></span></div>
+          </div>
+        </div>
+
+        <!-- Live feed -->
+        <div class="panel-card">
+          <h3>🔴 Live feed</h3>
+          <div class="live-feed" id="liveFeed"></div>
+        </div>
+
+        <!-- Economy deep-dive -->
+        <div class="panel-card">
+          <h3>💴 Economy deep-dive</h3>
+          <div class="inner-card">
+            <div class="card-head"><h4>Key indicators</h4><span class="pill gold">2024</span></div>
+            <div style="display:grid;gap:8px;margin-top:4px">
+              <div class="bar-row">
+                <div class="bar-label">GDP growth</div>
+                <div class="bar-track"><div class="bar-fill" style="width:38%;background:linear-gradient(90deg,var(--green),var(--blue))"></div></div>
+                <div class="bar-val">1.9%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Inflation</div>
+                <div class="bar-track"><div class="bar-fill" style="width:56%;background:linear-gradient(90deg,var(--gold),var(--pink))"></div></div>
+                <div class="bar-val">2.8%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Unemployment</div>
+                <div class="bar-track"><div class="bar-fill" style="width:26%;background:linear-gradient(90deg,var(--blue),var(--green))"></div></div>
+                <div class="bar-val">2.6%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">E-commerce</div>
+                <div class="bar-track"><div class="bar-fill" style="width:51%;background:linear-gradient(90deg,var(--violet),var(--blue))"></div></div>
+                <div class="bar-val">10.2%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Renewables</div>
+                <div class="bar-track"><div class="bar-fill" style="width:44%;background:linear-gradient(90deg,var(--green),var(--blue))"></div></div>
+                <div class="bar-val">22.4%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="panel-card">
+          <h3>📅 Japan timeline</h3>
+          <div class="timeline" id="timeline"></div>
+        </div>
+
+        <!-- Demographics card -->
+        <div class="panel-card">
+          <h3>👥 Demographics</h3>
+          <div class="inner-card">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="metric">
+                <div class="metric-key">Median age</div>
+                <div class="metric-val">49.1</div>
+                <div class="metric-desc">Oldest nation on Earth</div>
+              </div>
+              <div class="metric">
+                <div class="metric-key">Over 65</div>
+                <div class="metric-val">29.4%</div>
+                <div class="metric-desc">of total population</div>
+              </div>
+              <div class="metric">
+                <div class="metric-key">Birth rate</div>
+                <div class="metric-val">6.6</div>
+                <div class="metric-desc">per 1,000 people 2023</div>
+              </div>
+              <div class="metric">
+                <div class="metric-key">Life exp. ♂</div>
+                <div class="metric-val">81.3 yrs</div>
+                <div class="metric-desc">Stats Bureau JP 2024</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API payload -->
+        <div class="panel-card">
+          <h3>🛰 API payload</h3>
+          <div class="inner-card">
+            <div class="card-head">
+              <h4>Live + seeded JSON</h4>
+              <span class="pill" id="jsonStatus">live</span>
+            </div>
+            <div class="json-box" id="jsonView">Waiting for data…</div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+    <!-- end .main-grid -->
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+      <div>
+        Click anywhere for sparks · <span class="kbd">Space</span> for burst ·
+        <span class="kbd">M</span> to shift scene
+      </div>
+      <div style="color:var(--dim)">World Bank · JNTO · e-Stat · IMF · AJA · MLIT · MIC JP</div>
+    </footer>
+
+  </div>
+  <!-- end .app -->
+
+  <!-- ── Scripts (order matters) ── -->
+  <script src="data/japan-stats.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

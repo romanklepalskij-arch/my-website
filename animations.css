@@ -1,0 +1,127 @@
+/* =============================================
+   ANIMATIONS.CSS  –  Tokyo Neon Empire
+   All @keyframes + transition helpers
+   ============================================= */
+
+/* ── Brand / glow pulsing ── */
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.9; }
+  50%       { transform: scale(1.24); opacity: 1;   }
+}
+
+@keyframes titleShift {
+  0%   { background-position: 0%   50%; }
+  100% { background-position: 280% 50%; }
+}
+
+@keyframes textShift {
+  0%   { background-position: 0%   50%; }
+  100% { background-position: 280% 50%; }
+}
+
+/* ── Canvas / overlay ── */
+@keyframes scanFlicker {
+  0%   { opacity: 0.16; }
+  50%  { opacity: 0.21; }
+  100% { opacity: 0.15; }
+}
+
+/* ── Hero background drift ── */
+@keyframes heroDrift {
+  from { transform: translate3d(-1.5%, -1.5%, 0) rotate(0deg);  }
+  to   { transform: translate3d(2%,    2%,    0) rotate(5deg);  }
+}
+
+/* ── Idol floaty ── */
+@keyframes floaty {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-14px); }
+}
+
+/* ── Sakura petals ── */
+@keyframes petalFall {
+  0%   { transform: translateY(-10vh)  translateX(0)   rotate(0deg);   opacity: 0; }
+  8%   { opacity: 1; }
+  100% { transform: translateY(115vh)  translateX(72px) rotate(380deg); opacity: 0; }
+}
+
+/* ── Ticker ── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ── Bar fill animation ── */
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Feed item slide in ── */
+@keyframes feedSlideIn {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Dot blink ── */
+@keyframes blink {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Card shine sweep ── */
+@keyframes shine {
+  0%   { left: -120%; }
+  60%  { left: 120%;  }
+  100% { left: 120%;  }
+}
+.has-shine {
+  position: relative;
+  overflow: hidden;
+}
+.has-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: shine 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Number counter (JS-driven via data-target) ── */
+.count-up {
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+/* ── Hover lift for generic cards ── */
+.lift {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Fade in stagger helper ── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: fadeInUp 0.6s ease both;
+}
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in:nth-child(1)  { animation-delay: 0.05s; }
+.fade-in:nth-child(2)  { animation-delay: 0.1s; }
+.fade-in:nth-child(3)  { animation-delay: 0.15s; }
+.fade-in:nth-child(4)  { animation-delay: 0.2s; }
+.fade-in:nth-child(5)  { animation-delay: 0.25s; }
+.fade-in:nth-child(6)  { animation-delay: 0.3s; }
+.fade-in:nth-child(7)  { animation-delay: 0.35s; }
+.fade-in:nth-child(8)  { animation-delay: 0.4s; }
+.fade-in:nth-child(9)  { animation-delay: 0.45s; }
+.fade-in:nth-child(10) { animation-delay: 0.5s; }
