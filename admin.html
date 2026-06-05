@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Lillehammer Quest Map</title>
+    <title>Lillehammer Quest</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,7 +17,6 @@
     <div id="map"></div>
 
     <script>
-        // Din Firebase Config (behold denne slik den er)
         const firebaseConfig = {
             apiKey: "AIzaSyCrDd-k9CWVlFq6YU7Nba1J-Xx3rd4opuw",
             authDomain: "my-tracker-map-15db4.firebaseapp.com",
@@ -31,76 +30,63 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 1. Sett opp kartet fokusert på Lillehammer sentrum
+        // 1. Initialiser kartet på Lillehammer
         const map = L.map('map').setView([61.115, 10.466], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // 2. Definer punkter i Lillehammer
+        // 2. Definer dine punkter i Lillehammer
         const questPoints = [
-            { name: "Skysstasjonen", lat: 61.1147, lng: 10.4633, reached: false },
-            { name: "Sigrid Undsets Plass", lat: 61.1153, lng: 10.4674, reached: false },
-            { name: "Søndre Park", lat: 61.1125, lng: 10.4685, reached: false }
+            { id: 1, name: "Skysstasjonen", lat: 61.1147, lng: 10.4633 },
+            { id: 2, name: "Sigrid Undsets Plass", lat: 61.1153, lng: 10.4674 },
+            { id: 3, name: "Søndre Park", lat: 61.1125, lng: 10.4685 }
         ];
 
-        const pointMarkers = [];
+        const pointMarkers = {};
+        const userMarkers = {};
 
-        // Funksjon for å tegne punktene
-        function drawPoints() {
-            questPoints.forEach((p, index) => {
-                const color = p.reached ? "green" : "red";
-                
-                // Vi bruker en sirkel for å vise fargeskifte enkelt
-                if (pointMarkers[index]) {
-                    pointMarkers[index].setStyle({ color: color, fillColor: color });
-                } else {
-                    pointMarkers[index] = L.circle([p.lat, p.lng], {
-                        color: color,
-                        fillColor: color,
-                        fillOpacity: 0.5,
-                        radius: 30 // 30 meter sone
-                    }).addTo(map).bindPopup(p.name);
-                }
-            });
-        }
-
-        drawPoints();
-
-        // 3. Funksjon for å regne ut avstand (Haversine formula)
+        // Funksjon for å regne ut avstand i meter
         function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Jordens radius i meter
+            const R = 6371e3; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                       Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; // Avstand i meter
+            return R * c;
         }
 
-        const userMarkers = {};
+        // Tegn de faste punktene som BLÅ sirkler først
+        questPoints.forEach(p => {
+            pointMarkers[p.id] = L.circle([p.lat, p.lng], {
+                color: 'blue',
+                fillColor: '#30f',
+                fillOpacity: 0.5,
+                radius: 40 
+            }).addTo(map).bindPopup(p.name);
+        });
 
-        // 4. Lytt på Firebase og sjekk avstand
+        // 3. Lytt på Firebase for å se hvor DU og dine venner er
         database.ref('locations').on('value', (snapshot) => {
             const data = snapshot.val();
             for (let name in data) {
                 const user = data[name];
-                
-                // Oppdater eller lag markør for personen
+
+                // Oppdater person-markør
                 if (userMarkers[name]) {
                     userMarkers[name].setLatLng([user.lat, user.lng]);
                 } else {
                     userMarkers[name] = L.marker([user.lat, user.lng]).addTo(map).bindPopup(name);
                 }
 
-                // SJEKK AVSTAND til alle punkter
-                questPoints.forEach((p) => {
-                    const dist = getDistance(user.lat, user.lng, p.lat, p.lng);
-                    if (dist < 50) { // Hvis du er nærmere enn 50 meter
-                        p.reached = true;
+                // SJEKK AVSTAND (Hvis personen er nær et punkt, skift farge til RØD)
+                questPoints.forEach(p => {
+                    const distance = getDistance(user.lat, user.lng, p.lat, p.lng);
+                    if (distance < 50) { // Nærmere enn 50 meter
+                        pointMarkers[p.id].setStyle({ color: 'red', fillColor: '#f03' });
                     }
                 });
             }
-            drawPoints(); // Tegn punktene på nytt med riktig farge
         });
     </script>
 </body>
