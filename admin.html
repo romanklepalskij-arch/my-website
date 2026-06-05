@@ -1,63 +1,98 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Lillehammer Quest | Premium Edition</title>
+    <title>SnapMap Quest</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Avenir:wght@600&family=Poppins:wght@700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        body { margin: 0; padding: 0; background: #0b0e14; overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #0b0e14; }
-        
-        /* Glassmorphism Header */
-        .overlay-header {
+        body { margin: 0; padding: 0; background: #101010; font-family: 'Avenir', 'Poppins', sans-serif; }
+        #map { height: 100vh; width: 100vw; }
+
+        /* Snap Style Header */
+        .snap-header {
             position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 15px 40px;
-            border-radius: 20px;
-            color: #fff;
-            border: 1px solid rgba(255, 252, 0, 0.3);
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            letter-spacing: 4px;
-            text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
 
-        .overlay-header span { color: #FFFC00; text-shadow: 0 0 10px rgba(255, 252, 0, 0.5); }
-
-        /* Custom Popup Styling */
-        .leaflet-popup-content-wrapper {
-            background: rgba(20, 20, 20, 0.9) !important;
-            color: #fff !important;
-            border: 1px solid #444;
-            border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
+        .snap-title {
+            background: #FFFC00; /* Snap Yellow */
+            color: #000;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-transform: uppercase;
         }
-        .leaflet-popup-tip { background: rgba(20, 20, 20, 0.9) !important; }
 
-        /* Hide Default Leaflet Elements */
-        .leaflet-control-attribution { background: none !important; color: #444 !important; }
+        /* Snap Style Search/Action Bar at bottom */
+        .snap-footer {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .snap-btn {
+            background: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            font-size: 20px;
+        }
+
+        .snap-btn.main {
+            width: 70px;
+            height: 70px;
+            background: #FFFC00;
+            border: 4px solid #000;
+        }
+
+        /* Marker Styles */
+        .user-dot {
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255,252,0,0.6);
+        }
+
+        .leaflet-container { background: #101010 !important; }
     </style>
 </head>
 <body>
 
-    <div class="overlay-header">LILLEHAMMER <span>QUEST</span></div>
+    <div class="snap-header">
+        <div class="snap-title">SnapMap: Lillehammer</div>
+    </div>
+
     <div id="map"></div>
 
+    <div class="snap-footer">
+        <div class="snap-btn">🔍</div>
+        <div class="snap-btn main">👻</div>
+        <div class="snap-btn">📍</div>
+    </div>
+
     <script>
-        // Your Firebase Configuration (Keep this private)
         const firebaseConfig = {
             apiKey: "AIzaSyCrDd-k9CWVlFq6YU7Nba1J-Xx3rd4opuw",
             authDomain: "my-tracker-map-15db4.firebaseapp.com",
@@ -71,11 +106,12 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Initialize Map with "Dark Matter" theme
+        // Snap Map Style (Carto Voyager labels on Dark)
         const map = L.map('map', { zoomControl: false }).setView([61.115, 10.466], 15);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+            variant: 'dark_all'
+        }).addTo(map);
 
-        // Five locations - Radius reduced to 25m for a cleaner look
         const questPoints = [
             { id: 1, name: "Skysstasjonen", lat: 61.1147, lng: 10.4633 },
             { id: 2, name: "Sigrid Undsets Plass", lat: 61.1153, lng: 10.4674 },
@@ -87,7 +123,6 @@
         const pointMarkers = {};
         const userMarkers = {};
 
-        // Haversine Distance Formula
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -98,51 +133,48 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        // Draw initial Glow Points (Cyan)
+        // Create Small Blue Points
         questPoints.forEach(p => {
             pointMarkers[p.id] = L.circle([p.lat, p.lng], {
-                color: '#00fbff',
-                fillColor: '#00fbff',
-                fillOpacity: 0.15,
-                weight: 3,
-                dashArray: '5, 10', // Animated look
-                radius: 25
-            }).addTo(map).bindPopup(`<b>${p.name}</b>`);
+                color: '#33ccff',
+                fillColor: '#33ccff',
+                fillOpacity: 0.2,
+                weight: 2,
+                radius: 20 // Tiny and sleek
+            }).addTo(map).bindPopup(p.name);
         });
 
         database.ref('locations').on('value', (snapshot) => {
             const data = snapshot.val();
             
-            // Reset colors
+            // Reset to Snap Blue
             questPoints.forEach(p => {
-                pointMarkers[p.id].setStyle({ color: '#00fbff', fillColor: '#00fbff' });
+                pointMarkers[p.id].setStyle({ color: '#33ccff', fillColor: '#33ccff' });
             });
 
             for (let name in data) {
                 const user = data[name];
 
-                // Update or create User Pulse Marker
                 if (userMarkers[name]) {
                     userMarkers[name].setLatLng([user.lat, user.lng]);
                 } else {
+                    // Marker for users looks like a Snap avatar dot
                     userMarkers[name] = L.circleMarker([user.lat, user.lng], {
-                        radius: 6,
+                        radius: 8,
                         fillColor: "#fff",
-                        color: "#FFFC00", // Snapchat yellow border for player
-                        weight: 4,
+                        color: "#000",
+                        weight: 3,
                         fillOpacity: 1
-                    }).addTo(map).bindPopup(`<b>Player: ${name}</b>`);
+                    }).addTo(map).bindPopup(`<b>${name}</b>`);
                 }
 
-                // Logic: Blue to Red within 50m
                 questPoints.forEach(p => {
                     const distance = getDistance(user.lat, user.lng, p.lat, p.lng);
                     if (distance < 50) { 
                         pointMarkers[p.id].setStyle({ 
-                            color: '#ff2d55', 
-                            fillColor: '#ff2d55',
-                            fillOpacity: 0.5,
-                            dashArray: '0' 
+                            color: '#ff0033', // Snap Alert Red
+                            fillColor: '#ff0033',
+                            fillOpacity: 0.6
                         });
                     }
                 });
