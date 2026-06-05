@@ -8,25 +8,35 @@
 </head>
 <body>
     <div style="text-align: center; padding-top: 50px; font-family: sans-serif;">
-        <h2>SnapMap</h2>
-        <input type="text" id="username" placeholder="Твое имя" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;"><br><br>
-        <button onclick="sendData()" style="padding: 15px 30px; background: #FFFC00; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #e6e300;">ОТПРАВИТЬ ПОЗИЦИЮ</button>
-        <p id="status" style="margin-top: 20px; color: #666;"></p>
+        <h2 style="color: #333;">SnapMap Tracker</h2>
+        <p>Enter your name to share your location:</p>
+        <input type="text" id="username" placeholder="Your Name" style="padding: 12px; border-radius: 8px; border: 1px solid #ccc; width: 80%; max-width: 300px;"><br><br>
+        <button onclick="sendData()" style="padding: 15px 30px; background: #FFFC00; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #e6e300; font-size: 16px;">SHARE LOCATION</button>
+        <p id="status" style="margin-top: 20px; font-weight: bold;"></p>
     </div>
 
     <script>
-        // ТВОИ НАСТРОЙКИ ИЗ FIREBASE (ШАГ 1):
+        // Your Firebase configuration from your screenshot
         const firebaseConfig = {
-            // ВСТАВЬ СЮДА СВОИ КЛЮЧИ (apiKey, authDomain и т.д.)
+            apiKey: "AIzaSyCrDd-k9CWVlFq6YU7Nba1J-Xx3rd4opuw",
+            authDomain: "my-tracker-map-15db4.firebaseapp.com",
+            projectId: "my-tracker-map-15db4",
+            storageBucket: "my-tracker-map-15db4.firebasestorage.app",
+            messagingSenderId: "485255429808",
+            appId: "1:485255429808:web:15741013d3cdf6efacc575",
+            databaseURL: "https://my-tracker-map-15db4-default-rtdb.europe-west1.firebasedatabase.app"
         };
         
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         async function sendData() {
-            let name = document.getElementById("username").value || "Аноним";
-            let status = document.getElementById("status");
-            status.innerText = "Определяю локацию...";
+            const name = document.getElementById("username").value.trim() || "Anonymous";
+            const status = document.getElementById("status");
+            
+            status.innerText = "🔍 Locating...";
+            status.style.color = "black";
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 let battery = "N/A";
@@ -35,20 +45,24 @@
                     battery = (b.level * 100).toFixed(0) + "%";
                 }
 
-                // Запись данных в базу
+                // Send data to Realtime Database
                 database.ref('locations/' + name).set({
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude,
                     battery: battery,
-                    time: new Date().toLocaleTimeString()
+                    timestamp: new Date().toLocaleString()
+                }).then(() => {
+                    status.innerText = "✅ Location shared successfully!";
+                    status.style.color = "green";
+                }).catch((error) => {
+                    status.innerText = "❌ Database error: " + error.message;
+                    status.style.color = "red";
                 });
 
-                status.innerText = "Успешно! Ты на карте.";
-                status.style.color = "green";
             }, (err) => {
-                status.innerText = "Ошибка: Разреши доступ к GPS в браузере!";
+                status.innerText = "❌ Error: Please allow GPS access!";
                 status.style.color = "red";
-            });
+            }, { enableHighAccuracy: true });
         }
     </script>
 </body>
