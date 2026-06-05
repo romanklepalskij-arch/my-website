@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Phone Info</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <h2>Phone Information</h2>
+    <button onclick="getInfo()">Get Info</button>
+
+    <p id="result"></p>
+
+    <script>
+      async function getInfo() {
+        let result = document.getElementById("result");
+
+        // Get Location
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            let latitude = position.coords.latitude;
+            let longitude = position.coords.longitude;
+
+            let batteryText = "Battery API not supported.";
+
+            // Get Battery (works only in some browsers)
+            if ("getBattery" in navigator) {
+              let battery = await navigator.getBattery();
+              batteryText = (battery.level * 100).toFixed(0) + "%";
+            }
+
+            result.innerHTML = `
+            <b>Latitude:</b> ${latitude}<br>
+            <b>Longitude:</b> ${longitude}<br>
+            <b>Battery:</b> ${batteryText}
+        `;
+
+            // Vibrate phone
+            if (navigator.vibrate) {
+              navigator.vibrate([300, 200, 300]);
+            }
+          },
+          (error) => {
+            result.innerHTML = "Location permission denied.";
+          },
+        );
+      }
+    </script>
+  </body>
+</html>
