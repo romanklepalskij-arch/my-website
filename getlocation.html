@@ -1,49 +1,55 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Phone Info</title>
+<head>
+    <title>SnapMap Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
-  <body>
-    <h2>Phone Information</h2>
-    <button onclick="getInfo()">Get Info</button>
-
-    <p id="result"></p>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div style="text-align: center; padding-top: 50px; font-family: sans-serif;">
+        <h2>SnapMap</h2>
+        <input type="text" id="username" placeholder="Твое имя" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;"><br><br>
+        <button onclick="sendData()" style="padding: 15px 30px; background: #FFFC00; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #e6e300;">ОТПРАВИТЬ ПОЗИЦИЮ</button>
+        <p id="status" style="margin-top: 20px; color: #666;"></p>
+    </div>
 
     <script>
-      async function getInfo() {
-        let result = document.getElementById("result");
+        // ТВОИ НАСТРОЙКИ ИЗ FIREBASE (ШАГ 1):
+        const firebaseConfig = {
+            // ВСТАВЬ СЮДА СВОИ КЛЮЧИ (apiKey, authDomain и т.д.)
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        // Get Location
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            let latitude = position.coords.latitude;
-            let longitude = position.coords.longitude;
+        async function sendData() {
+            let name = document.getElementById("username").value || "Аноним";
+            let status = document.getElementById("status");
+            status.innerText = "Определяю локацию...";
 
-            let batteryText = "Battery API not supported.";
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                let battery = "N/A";
+                if ("getBattery" in navigator) {
+                    const b = await navigator.getBattery();
+                    battery = (b.level * 100).toFixed(0) + "%";
+                }
 
-            // Get Battery (works only in some browsers)
-            if ("getBattery" in navigator) {
-              let battery = await navigator.getBattery();
-              batteryText = (battery.level * 100).toFixed(0) + "%";
-            }
+                // Запись данных в базу
+                database.ref('locations/' + name).set({
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    battery: battery,
+                    time: new Date().toLocaleTimeString()
+                });
 
-            result.innerHTML = `
-            <b>Latitude:</b> ${latitude}<br>
-            <b>Longitude:</b> ${longitude}<br>
-            <b>Battery:</b> ${batteryText}
-        `;
-
-            // Vibrate phone
-            if (navigator.vibrate) {
-              navigator.vibrate([300, 200, 300]);
-            }
-          },
-          (error) => {
-            result.innerHTML = "Location permission denied.";
-          },
-        );
-      }
+                status.innerText = "Успешно! Ты на карте.";
+                status.style.color = "green";
+            }, (err) => {
+                status.innerText = "Ошибка: Разреши доступ к GPS в браузере!";
+                status.style.color = "red";
+            });
+        }
     </script>
-  </body>
+</body>
 </html>
